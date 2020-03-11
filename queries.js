@@ -1,5 +1,3 @@
-
-
 const connection = require("./connection");
 
 class Queries {
@@ -13,7 +11,7 @@ class Queries {
 
     }
     viewDepartment(){
-
+        connection.query("SELECT * FROM department");
     }
     viewEmployee(){
 

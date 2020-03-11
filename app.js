@@ -1,6 +1,6 @@
 const inquirer = require("inquirer");
 const mysql = require("mysql");
-const queries = require("./Queries");
+//const queries = require("./Queries");
 const util = require("util");
 
 const connection = mysql.createConnection({
@@ -14,7 +14,31 @@ connection.connect();
 connection.query = util.promisify(connection.query);
 module.exports = connection;
 
-dbQueries = new queries;
+class Queries {
+    addDepartment(){
+        console.log("works");
+    }
+    addRole(){
+
+    }
+    addEmployee(){
+
+    }
+    viewDepartment(){
+        return connection.query("SELECT * FROM department");
+    }
+    viewEmployee(){
+
+    }
+    viewRole(){
+
+    }
+    updateEmployeeRole(){
+
+    }
+}
+
+dbQueries = new Queries;
 
 const initQuestions =
 {
@@ -27,7 +51,7 @@ async function init() {
     const initQuestion = await inquirer.prompt(initQuestions);
     switch (initQuestion.action) {
         case "Add Department":
-            dbQueries.addDepartment();
+            await dbQueries.addDepartment();
             break;
         case "Add Role":
 
@@ -36,7 +60,8 @@ async function init() {
 
             break;
         case "View Department":
-
+            const departments = await dbQueries.viewDepartment();
+            console.table(departments);
             break;
         case "View Role":
 

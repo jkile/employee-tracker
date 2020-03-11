@@ -1,5 +1,7 @@
 const inquirer = require("inquirer");
 const mysql = require("mysql");
+const queries = require("./Queries");
+const util = require("util");
 
 const connection = mysql.createConnection({
     host: "localhost",
@@ -12,6 +14,8 @@ connection.connect();
 connection.query = util.promisify(connection.query);
 module.exports = connection;
 
+dbQueries = new queries;
+
 const initQuestions =
 {
     name: "action",
@@ -23,7 +27,7 @@ async function init() {
     const initQuestion = await inquirer.prompt(initQuestions);
     switch (initQuestion.action) {
         case "Add Department":
-
+            dbQueries.addDepartment();
             break;
         case "Add Role":
 
@@ -45,3 +49,4 @@ async function init() {
             break;
     }
 }
+init();

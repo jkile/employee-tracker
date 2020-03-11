@@ -1,7 +1,7 @@
 const inquirer = require("inquirer");
 const mysql = require("mysql");
-//const queries = require("./Queries");
 const util = require("util");
+const cTable = require("console.table");
 
 const connection = mysql.createConnection({
     host: "localhost",
@@ -31,13 +31,13 @@ class Queries {
         if (manager != "None") {
             const str_1 = manager.split(/\s(.+)/)[0];
             const str_2 = manager.split(/\s(.+)/)[1];
-            const managerID = await connection.query("SELECT id FROM employee WHERE ?", 
-            [{
-                first_name: str_1
-            },
-            {
-                last_name: str_2
-            }])
+            const managerID = await connection.query("SELECT id FROM employee WHERE ?",
+                [{
+                    first_name: str_1
+                },
+                {
+                    last_name: str_2
+                }])
             return connection.query("INSERT INTO employee SET ?",
                 {
                     first_name: firstName,
@@ -63,8 +63,15 @@ class Queries {
     viewRole() {
         return connection.query("SELECT * FROM role");
     }
-    updateEmployeeRole() {
-
+    async updateEmployeeRole(name, role) {
+        const roleID = await connection.query("SELECT id FROM role WHERE title=?", [role]);
+        const str_1 = name.split(/\s(.+)/)[0];
+        const str_2 = name.split(/\s(.+)/)[1];
+        return connection.query("UPDATE employee SET ? WHERE ?", [
+            {role_id: roleID[0].id},
+            {first_name: str_1},
+            {last_name: str_2}
+        ]);
     }
 }
 
@@ -125,6 +132,19 @@ const employeeQuestions = [
         choices: roleQueryToArray
     }
 ];
+const employeeRoleQuestions =
+    [{
+        name: "employee",
+        type: "list",
+        message: "Select employee to change role: ",
+        choices: employeeQueryToArray
+    },
+    {
+        name: "role",
+        type: "list",
+        message: "Select role to change to: ",
+        choices: roleQueryToArray
+    }];
 async function roleQueryToArray() {
     const roles = await dbQueries.viewRole();
     const roleArray = roles.map(item => item.title);
@@ -147,6 +167,11 @@ async function managerQueryToArray() {
     const uniqueManagerArray = [...new Set(managerArray)];
     uniqueManagerArray.push("None");
     return uniqueManagerArray;
+}
+async function employeeQueryToArray() {
+    const employees = await dbQueries.viewEmployee();
+    const employeeArray = employees.map(item => item.first_name + " " + item.last_name);
+    return employeeArray;
 }
 async function init() {
     const initQuestion = await inquirer.prompt(initQuestions);
@@ -182,7 +207,9 @@ async function init() {
             init();
             break;
         case "Update Employee Role":
-
+            const roleChanger = await inquirer.prompt(employeeRoleQuestions);
+            await dbQueries.updateEmployeeRole(roleChanger.employee, roleChanger.role);
+            init();
             break;
     }
 }
